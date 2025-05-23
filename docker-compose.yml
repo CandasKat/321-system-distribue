@@ -1,0 +1,120 @@
+services:
+  traefik:
+    image: traefik:v3.3.6
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "81:80" # Traefik écoute sur le port 80 (HTTP), accessible sur le port 81 de la machine hôte
+      - "8080:8080" # Dashboard Traefik
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  fastapi-service:
+    image: ce64c1905b42/product:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi.rule=PathPrefix(`/`)"
+      - "traefik.http.services.fastapi.loadbalancer.server.port=8000"
+      - "traefik.http.routers.fastapi-swagger.rule=PathPrefix(`/docs`)"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=commandes
+      - POSTGRES_USER=candas
+      - POSTGRES_PASSWORD=2003
+    expose:
+      - "8000"
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - backend
+    deploy:
+      replicas: 2
+
+
+
+  java-service:
+    image: ce64c1905b42/command-spring:latest
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/commandes
+      - SPRING_DATASOURCE_USERNAME=candas
+      - SPRING_DATASOURCE_PASSWORD=2003
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=guest
+      - SPRING_RABBITMQ_PASSWORD=guest
+    expose:
+      - "8081"
+    # ports:    # <-- supprimé, pas d'exposition directe, Traefik fait le reverse proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.java.rule=PathPrefix(`/api/v1`)"
+      - "traefik.http.services.java.loadbalancer.server.port=8081"
+      - "traefik.http.routers.java-swagger.rule=PathPrefix(`/swagger-ui.html`) || PathPrefix(`/api-docs`) || PathPrefix(`/swagger-ui`)"
+      - "traefik.http.routers.java-swagger.service=java"
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - backend
+    deploy:
+      replicas: 2
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=commandes
+      - POSTGRES_USER=candas
+      - POSTGRES_PASSWORD=2003
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672" # Expose le port amont (pour client externes)
+      - "15672:15672" # Management UI
+    networks:
+      - backend
+    deploy:
+      replicas: 1
+
+  visualizer:
+    image: dockersamples/visualizer:latest
+    ports:
+      - "8085:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks:
+      - backend
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+volumes:
+  postgres-data:
+
+
+networks:
+  backend:
+    driver:
+      overlay
