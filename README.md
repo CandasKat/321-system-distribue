@@ -1,128 +1,140 @@
-Ce projet est un système de gestion des commandes développé avec Spring Boot (Java) et FastAPI (Python). Les services communiquent via RabbitMQ et utilisent une base de données PostgreSQL. Le système peut être exécuté localement pour le développement ou déployé en production avec Docker Swarm.
+# Distributed Demo System
 
-## 📦 Contenu du projet
-Le système se compose des services suivants :
+**A School Project Demonstrating Distributed Systems Concepts**
 
-| Nom du service   | Technologie      | Description                                    |
-| ---------------- | ---------------- | ---------------------------------------------- |
-| order-management | Spring Boot      | Gestion des commandes et des produits associés |
-| product-service  | FastAPI          | Catalogue de produits et API                   |
-| postgres         | PostgreSQL       | Base de données principale                     |
-| rabbitmq         | RabbitMQ         | Système de messagerie                          |
-| traefik          | Traefik          | Reverse proxy et routage                       |
-| visualizer       | Swarm visualizer | Outil de visualisation du cluster              |
+This project is an academic demonstration of distributed systems architecture developed as part of coursework to showcase key concepts in distributed computing. The system implements an order management solution using microservices architecture with Spring Boot (Java) and FastAPI (Python), demonstrating inter-service communication via RabbitMQ message queuing and data persistence with PostgreSQL. 
+
+**Note:** This is a learning project created for educational purposes to demonstrate distributed systems patterns rather than a production-ready application.
+
+## 📦 Project Components
+The system demonstrates distributed architecture through the following components:
+
+| Service Name     | Technology       | Educational Purpose                             |
+| ---------------- | ---------------- | ----------------------------------------------- |
+| order-management | Spring Boot      | Order and product management microservice       |
+| product-service  | FastAPI          | Product catalog API and consumer service        |
+| postgres         | PostgreSQL       | Shared database demonstrating data consistency  |
+| rabbitmq         | RabbitMQ         | Message queuing for asynchronous communication |
+| traefik          | Traefik          | Reverse proxy and load balancing                |
+| visualizer       | Swarm visualizer | Cluster visualization tool                      |
 
 ---
-## ➤ Description du pattern Work Queues
-Le pattern Work Queues permet de distribuer des tâches longues ou intensives entre plusieurs workers (consommateurs) pour équilibrer la charge. RabbitMQ joue ici le rôle de répartiteur de messages : un producteur (publisher) envoie un message dans une file (queue), et un ou plusieurs consommateurs (workers) se chargent de traiter chaque message.
+## ➤ Work Queues Pattern (Learning Concept)
+The Work Queues pattern demonstrates how to distribute time-consuming or intensive tasks among multiple workers (consumers) to balance load. RabbitMQ acts as a message distributor: a producer (publisher) sends a message to a queue, and one or more consumers (workers) handle each message processing.
 
-## ➤ Utilisation dans l'application
-L'API Spring Boot publie un message dans la queue product_queue chaque fois qu’un commande est créé, modifié ou supprimé. Un service worker écrit en Python consomme ces messages via RabbitMQ pour simuler un traitement en arrière-plan pour mettre à jour de stock global qui se trouve dans le service de FastAPI.
+## ➤ Implementation in This Demo
+The Spring Boot API publishes a message to the `product_queue` whenever an order is created, modified, or deleted. A Python worker service consumes these messages via RabbitMQ to simulate background processing for updating global stock in the FastAPI service.
 
-## ➤ Plus-value de RabbitMQ
-- Asynchrone : l’API FastAPI reste rapide, même si le traitement est lourd.
-- Fiabilité : les messages sont persistants (delivery_mode=2), donc même si le worker tombe, RabbitMQ les garde.
-- Scalabilité : plusieurs workers peuvent consommer la même queue pour répartir la charge.
-- Découplage : l’API ne dépend pas du traitement en aval. Elle peut évoluer indépendamment du consommateur.
-## Fonctionnalités en bref
+## ➤ Benefits of RabbitMQ (Academic Learning Points)
+- **Asynchronous Processing**: The FastAPI remains responsive even during heavy processing
+- **Reliability**: Messages are persistent (delivery_mode=2), so they survive worker failures  
+- **Scalability**: Multiple workers can consume from the same queue to distribute load
+- **Decoupling**: The API doesn't depend on downstream processing, allowing independent evolution
 
-### ➤ Application micro-service : Spring Boot REST API et FastAPI
-- CRUD Produits et Commandes (Create, Read, Update, Delete)
-- Envoi d’un message RabbitMQ à chaque opération (création, mise à jour, suppression)
+## 🎓 Key Learning Features
 
-### ➤ Microservice Worker Python
-- Consomme les messages de la queue product_queue
-- Simule un traitement (par exemple : journalisation ou mise à jour d’un système tiers)
+### ➤ Microservices Architecture Demonstration
+- CRUD operations for Products and Orders (Create, Read, Update, Delete)
+- RabbitMQ message publishing for each operation (create, update, delete)
+- Inter-service communication patterns
 
+### ➤ Python Message Consumer Service
+- Consumes messages from the `product_queue`
+- Simulates processing (logging and system updates)
+- Demonstrates asynchronous message handling
 
-## 🚀  Démarrage rapide
-### 🧰 Prérequis
+## 🚀 Quick Start (Installation Instructions)
+### 🧰 Prerequisites
 * `Docker`
 * `Docker Compose`
-* `Docker Swarm` (pour la production)
-* (Optionnel pour le développement) Java 17+, Python 3.10+
+* `Docker Swarm` (for production deployment demonstration)
+* (Optional for development) Java 17+, Python 3.10+
+
 ---
-## 🐳 Exécution avec Docker
-### Utilisation de Docker Compose (mode développement)
+## 🐳 Running with Docker
+### Using Docker Compose (Development Mode)
 ```bash
 docker-compose up --build
 ```
-Ce fichier compose démarre les services suivants :
+This compose file starts the following services:
 
 * order-management (Spring Boot)
 * product-service (FastAPI)
 * postgres
 * rabbitmq
+
 ---
-## ⚙️ Déploiement avec Docker Swarm
-### 1. Initialiser Swarm
+## ⚙️ Deployment with Docker Swarm
+### 1. Initialize Swarm
 ```bash
 docker swarm init
 ```
-### 2. Déployer la stack
+### 2. Deploy the stack
 ```bash
 docker stack deploy -c docker-compose.yml ordersystem
 ```
-### 3. Accès aux interfaces
+### 3. Access Interfaces
 | Service                | URL                                       | Credentials                     |
 | ---------------------- | ----------------------------------------- | ------------------------------- |
-| Dashboard Traefik      | http://localhost:8080                     |                                 |
-| Swagger Spring Boot    | http://localhost:81/swagger-ui/index.html |                                 |
-| Swagger FastAPI        | http://localhost:81/docs                  |                                 |
-| Visualiseur Swarm      | http://localhost:8085                     |                                 |
+| Traefik Dashboard      | http://localhost:8080                     |                                 |
+| Spring Boot Swagger    | http://localhost:81/swagger-ui/index.html |                                 |
+| FastAPI Swagger        | http://localhost:81/docs                  |                                 |
+| Swarm Visualizer       | http://localhost:8085                     |                                 |
 | RabbitMQ Management UI | http://localhost:15672                    | user: guest,<br>password: guest |
 
 ---
-## 🔁 Points d’accès API
+## 🔁 API Endpoints
 ### Spring Boot (Java)
-* `GET /commandes` – Liste des commandes
-* `GET /commandes/{id}` - Detail un commande
-* `POST /commandes` – Créer une nouvelle commande
-* `PUT /commandes/{id}` - Update un commande existant
-* `DELETE /commandes/{id}` - Supprimer un commande
+* `GET /commandes` – List all orders
+* `GET /commandes/{id}` - Get order details
+* `POST /commandes` – Create a new order
+* `PUT /commandes/{id}` - Update an existing order
+* `DELETE /commandes/{id}` - Delete an order
 
-* `GET /commandes-produits` – Détails des produits d'une commande
-* `GET /commandes-produits/{id}` - Detail des produit d'un commande
-* `POST /commandes-produits` – Créer une nouvelle produit commande
-* `PUT /commandes-produits/{id}` - Update de produit d'un commande existant
-* `DELETE /commandes-produits/{id}` - Supprimer de produit d'un commande
+* `GET /commandes-produits` – Get order product details
+* `GET /commandes-produits/{id}` - Get specific order product details
+* `POST /commandes-produits` – Create a new order product
+* `PUT /commandes-produits/{id}` - Update an existing order product
+* `DELETE /commandes-produits/{id}` - Delete an order product
+
 ---
 ## FastAPI (Python)
-* `GET /produits/` – Liste des produits
-* `GET /produits/{id}` - Detail d'un produit
-* `POST /produits/` – Ajouter un nouveau produit
-* `PUT /produits/{id}` - Editer un produit existant
-* `DELETE /produits/{id}` - Supprimer un produit
+* `GET /produits/` – List all products
+* `GET /produits/{id}` - Get product details
+* `POST /produits/` – Add a new product
+* `PUT /produits/{id}` - Edit an existing product
+* `DELETE /produits/{id}` - Delete a product
+
 ---
-## 📌 Variables d’environnement
-Les variables suivantes peuvent être définies dans le fichier .env ou directement dans le docker-compose.yml :
+## 📌 Environment Variables
+The following variables can be defined in the .env file or directly in docker-compose.yml:
 
 | Variable                              | Description                  |
 | ------------------------------------- | ---------------------------- |
-| SPRING_DATASOURCE_URL                 | URL JDBC vers PostgreSQL     |
-| SPRING_DATASOURCE_USERNAME / PASSWORD | Identifiants base de données |
-| SPRING_RABBITMQ_HOST / PORT           | Adresse RabbitMQ             |
-| POSTGRES_USER / PASSWORD              | Connexion PostgreSQL         |
+| SPRING_DATASOURCE_URL                 | JDBC URL to PostgreSQL      |
+| SPRING_DATASOURCE_USERNAME / PASSWORD | Database credentials         |
+| SPRING_RABBITMQ_HOST / PORT           | RabbitMQ address             |
+| POSTGRES_USER / PASSWORD              | PostgreSQL connection        |
 
 ---
-## ⚠️ Remarques importantes
-RabbitMQ utilise par défaut l’identifiant `guest/guest`.
+## ⚠️ Important Notes
+RabbitMQ uses the default credentials `guest/guest`.
 
-Le service FastAPI dépend d’un consommateur (`consumer.py`) qui doit être actif pour recevoir les messages.
+The FastAPI service depends on a consumer (`consumer.py`) that must be active to receive messages.
 
-Traefik assure la gestion des routes et du reverse proxy.
+Traefik handles routing and reverse proxy management.
 
-Les deux services utilisent la même base de données commandes
+Both services use the same database for order management.
 
 ---
-## Utilisation de RabbitMQ (détail)
+## RabbitMQ Usage Details
 
-Chaque fois qu’un produit est :
-- Créé : un message avec action CREATED est envoyé
-- Mis à jour : message avec action UPDATED
-- Supprimé : message avec action DELETED
+Each time a product is:
+- Created: a message with action CREATED is sent
+- Updated: message with action UPDATED
+- Deleted: message with action DELETED
 
-Exemple de message JSON publié :
+Example JSON message published:
 ```json
 {
   "action": "UPDATED",
@@ -132,10 +144,41 @@ Exemple de message JSON publié :
 }
 ```
 
-Le service consumer-python écoute la queue product_queue, extrait les informations, et effectue un traitement simulé avec un print ou une action métier.
+The Python consumer service listens to the `product_queue`, extracts the information, and performs simulated processing with logging or business actions.
 
-## À venir ou suggestions d’évolution
+## 🤝 Contributing to this Academic Project
 
-- Ajouter un stockage ou une base de données pour tracer les actions des messages consommés
-- Ajouter d’autres types d’événements (ex : "produit épuisé", "alerte stock bas")
-- Intégration monitoring avec Prometheus + Grafana
+This is an educational project, but contributions that enhance the learning experience are welcome:
+
+### How to Contribute
+1. **Fork the Repository**: Create your own fork to experiment with changes
+2. **Create a Feature Branch**: 
+   ```bash
+   git checkout -b feature/learning-enhancement
+   ```
+3. **Focus on Educational Value**: Ensure changes help demonstrate distributed systems concepts
+4. **Test Your Changes**: Verify that the system still demonstrates the intended patterns
+5. **Document Learning Outcomes**: Explain how your changes enhance the educational value
+6. **Submit a Pull Request**: Include a clear description of the educational benefits
+
+### Areas for Educational Enhancement
+- Adding more comprehensive logging to show message flow
+- Implementing additional distributed patterns (Circuit Breaker, Saga, etc.)
+- Adding monitoring and observability features
+- Enhancing error handling demonstrations
+- Adding more detailed documentation of architectural decisions
+
+### Code Style Guidelines
+- Follow existing code formatting patterns
+- Add comments explaining distributed systems concepts
+- Ensure all code examples in documentation use proper markdown formatting
+- Include educational comments in complex distributed logic
+
+## 🔮 Future Learning Enhancements
+
+- Add storage or database for tracing consumed message actions
+- Add other event types (e.g., "product out of stock", "low stock alert")
+- Integration monitoring with Prometheus + Grafana
+- Implementation of additional distributed patterns
+- Enhanced error handling and resilience patterns
+- Performance testing and load balancing demonstrations
