@@ -1,6 +1,7 @@
-Ce projet a été réalisé dans le cadre d'un projet scolaire de fin d'études (CFC Développement d'applications). Il s'agit d'un système de gestion des commandes développé avec Spring Boot (Java) et FastAPI (Python), reposant sur une architecture distribuée.
+Ce projet a été réalisé dans le cadre d’un exercice scolaire durant ma formation CFC en développement d’applications. Il s'agit d'un système de gestion des commandes développé avec Spring Boot (Java) et FastAPI (Python), reposant sur une architecture distribuée.
 
 Les services communiquent entre eux via RabbitMQ et utilisent PostgreSQL comme base de données. Le système peut être exécuté localement pour le développement ou déployé en production à l’aide de Docker Swarm.
+
 
 
 
